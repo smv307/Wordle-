@@ -2,13 +2,19 @@ import turtle
 import random
 import time
 import tkinter as tk
-from english_words import english_words_alpha_set as words
+import nltk
+from nltk.stem.snowball import SnowballStemmer
 
+nltk.download("words")
+snow_stemmer = SnowballStemmer(language="english")
+eng_words = set(nltk.corpus.words.words())
 wordle_words_set = set(line.strip() for line in open('wordList.txt'))
 
 yellow = "#b69f42"
 gray = "#525454"
 green = "#5a855a"
+black = "#121213"
+grey = "#3c3c3c"
 
 screen = turtle.Screen()
 screen.setup(516, 660)
@@ -23,10 +29,12 @@ canvas1 = tk.Canvas(root, width=400, height=300)
 canvas1.pack()
 
 entry1 = tk.Entry(root)
+entry1.config(bg=grey, fg="white", font=("Helvetica Neue", 12, "bold"))
 canvas1.create_window(200, 140, window=entry1)
+canvas1.config(bg=grey)
 
 label1 = None
-topLabel = tk.Label(root, text="ENTER YOUR TEXT:", fg="black")
+topLabel = tk.Label(root, text="ENTER YOUR TEXT:", fg="white", bg=grey)
 topLabel.config(font=("Helvetica Neue", 15, "bold"))
 canvas1.create_window(200, 70, window=topLabel)
 
@@ -37,16 +45,18 @@ def getWord():
     x = entry1.get()
     msg = newAlg(x)
     if msg != None:
-        label1 = tk.Label(root, text=msg, font=("Helvetica Neue", 10))
+        label1 = tk.Label(root, text=msg, fg="white", bg=grey, font=("Helvetica Neue", 10))
+        canvas1.create_window(200, 240, window=label1)
+        root.update()
         if msg == "You win!" or "lose" in msg:
             time.sleep(2)
             turtle.bye()
             root.destroy()
     else:
-        label1 = tk.Label(root, text="", font=("Helvetica Neue", 10))
-    canvas1.create_window(200, 240, window=label1)
+        label1 = tk.Label(root, text="",  fg="white", bg=grey, font=("Helvetica Neue", 10))
+        canvas1.create_window(200, 240, window=label1)
 
-button1 = tk.Button(root, text="ENTER", command=getWord)
+button1 = tk.Button(root, text="ENTER", command=getWord, font=("Helvetica Neue", 10, "bold"), bg="white")
 canvas1.create_window(200, 190, window=button1)
 
 class letter_box:
@@ -96,6 +106,8 @@ def newAlg(guess):
     global numberlives
     global hints
     hints = [-1, -1, -1, -1, -1]
+    if guess not in eng_words and guess not in wordle_words_set and snow_stemmer.stem(guess) not in eng_words:
+        return "Not a word."
     if len(guess) > 5:
         return "Make sure you guess a five letter word."
     for index in range(5):
